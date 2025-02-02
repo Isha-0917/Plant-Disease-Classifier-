@@ -67,10 +67,22 @@ if st.button("Predict"):
 
             # Predict
             prediction = model.predict(features_scaled)
-            st.success(f"Predicted Disease: {label_encoders['Disease'].inverse_transform(prediction)[0]}")
+
+            # Check if the prediction is valid
+            try:
+                decoded_prediction = label_encoders["Disease"].inverse_transform(prediction)
+                st.success(f"Predicted Disease: {decoded_prediction[0]}")
+            except ValueError:
+                st.error(
+                    f"The model predicted an unseen or invalid label: {prediction[0]}. Please check the model or data."
+                )
+                st.write("Debugging Information:")
+                st.write(f"Prediction Output: {prediction}")
+                st.write(f"Features: {features}")
+                st.write(f"Scaled Features: {features_scaled}")
 
         except Exception as e:
-            st.error(f"Error during prediction: {e}")
+            st.error(f"Unexpected error: {e}")
 # Reset Button
 if st.button("Reset"):
     st.rerun()
