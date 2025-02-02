@@ -1,48 +1,43 @@
 import streamlit as st
-import pickle
+import joblib
 import numpy as np
 
-# Load the scaler and classifier
-scaler_path = "rf_scaler.pkl"
-classifier_path = "rf_classifier.pkl"
+# Load the trained Random Forest model
+model = joblib.load('rf_classifier.pkl')
+scaler = joblib.load('rf_scaler.pkl')
 
-with open(scaler_path, 'rb') as scaler_file:
-    scaler = pickle.load(scaler_file)
+st.title("Wine Classifier App")
+st.write("Enter the wine features below to classify the wine category.")
 
-with open(classifier_path, 'rb') as classifier_file:
-    classifier = pickle.load(classifier_file)
+# Feature Names (Modify as per your dataset)
+feature_names = ["Feature 1", "Feature 2", "Feature 3", "Feature 4"]
 
-# Title and description
-st.title("Random Forest Classifier")
-st.write("Upload input features to make predictions using the trained Random Forest Classifier.")
+# Create input fields dynamically
+user_input = []
+for feature in feature_names:
+    value = st.number_input(f"{feature}", min_value=0.0, step=0.1, format="%.2f")
+    user_input.append(value)
 
-# Input section
-def user_input_features():
-    st.sidebar.header("Input Features")
-    
-    # Replace these placeholders with actual feature names
-    feature1 = st.sidebar.number_input("Feature 1", min_value=0.0, max_value=100.0, value=50.0)
-    feature2 = st.sidebar.number_input("Feature 2", min_value=0.0, max_value=100.0, value=50.0)
-    feature3 = st.sidebar.number_input("Feature 3", min_value=0.0, max_value=100.0, value=50.0)
-    feature4 = st.sidebar.number_input("Feature 4", min_value=0.0, max_value=100.0, value=50.0)
+# Predict Button
+if st.button("Predict Category"):
+    if None in user_input:
+        st.warning("Please enter all values before predicting.")
+    else:
+        # Convert input to 2D array and scale it
+        input_array = np.array(user_input).reshape(1, -1)
+        scaled_input = scaler.transform(input_array)
 
-    # Continue adding input fields for all required features
-    data = {
-        "Feature 1": feature1,
-        "Feature 2": feature2,
-        "Feature 3": feature3,
-        "Feature 4": feature4,
-    }
-    
-    return np.array(list(data.values())).reshape(1, -1)
+        # Make prediction
+        prediction = model.predict(scaled_input)
+        prediction_proba = model.predict_proba(scaled_input)
 
-# Get input from the user
-input_features = user_input_features()
+        # Display Result
+        st.success(f"Predicted Category: *{prediction[0]}*")
+        st.write(f"Prediction Confidence: {max(prediction_proba[0]) * 100:.2f}%")
 
-# Scale the input and make predictions
-scaled_features = scaler.transform(input_features)
-prediction = classifier.predict(scaled_features)
+        # Download Option
+        st.download_button("Download Prediction", f"Category: {prediction[0]}", file_name="prediction.txt")
 
-# Display the prediction
-st.subheader("Prediction")
-st.write(f"The model predicts: {prediction[0]}")
+# Reset Button
+if st.button("Reset"):
+    st.experimental_rerun()
