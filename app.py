@@ -3,24 +3,21 @@ import streamlit as st
 import joblib
 import numpy as np
 
-# Load components
+# Load the required components
 try:
     scaler = joblib.load("scaler.pkl")
     label_encoders = joblib.load("label_encoders.pkl")
     model = joblib.load("rf_classifier.pkl")
 except Exception as e:
-    st.error(f"Error loading essential components: {e}")
+    st.error(f"Error loading required files: {e}")
     st.stop()
 
 # App title
 st.title("Plant Disease Classifier")
-st.write(
-    "Provide the following details to validate or predict the disease affecting the plant."
-)
+st.write("Enter the plant details to predict the disease.")
 
-# User inputs
+# Input features
 plant_name = st.selectbox("Plant Name", label_encoders["Plant Name"].classes_)
-disease_input = st.selectbox("Suspected Disease", label_encoders["Disease"].classes_)
 severity = st.selectbox("Severity", label_encoders["Severity"].classes_)
 region = st.selectbox("Region", label_encoders["Region"].classes_)
 treatment_status = st.selectbox(
@@ -30,23 +27,21 @@ days_since_detection = st.number_input(
     "Days Since Detection", min_value=0, step=1, format="%d"
 )
 
-# Process inputs
-if st.button("Predict and Validate"):
+# Predict button
+if st.button("Predict"):
     try:
         # Encode categorical features
         plant_name_encoded = label_encoders["Plant Name"].transform([plant_name])[0]
-        disease_encoded = label_encoders["Disease"].transform([disease_input])[0]
         severity_encoded = label_encoders["Severity"].transform([severity])[0]
         region_encoded = label_encoders["Region"].transform([region])[0]
         treatment_status_encoded = label_encoders["Treatment Status"].transform(
             [treatment_status]
         )[0]
 
-        # Prepare input array
+        # Prepare feature array
         features = np.array(
             [
                 plant_name_encoded,
-                disease_encoded,
                 severity_encoded,
                 region_encoded,
                 treatment_status_encoded,
@@ -57,23 +52,14 @@ if st.button("Predict and Validate"):
         # Scale features
         features_scaled = scaler.transform(features)
 
-        # Predict
+        # Predict disease
         prediction = model.predict(features_scaled)
-
-        # Decode predicted disease
         predicted_disease = label_encoders["Disease"].inverse_transform(prediction)[0]
 
-        # Compare user input with model prediction
-        if disease_input == predicted_disease:
-            st.success(f"The model agrees with your input. Predicted Disease: {predicted_disease}")
-        else:
-            st.warning(
-                f"The model predicts a different disease. "
-                f"Input Disease: {disease_input}, Predicted Disease: {predicted_disease}"
-            )
-
+        # Display the prediction
+        st.success(f"Predicted Disease: {predicted_disease}")
     except Exception as e:
-        st.error(f"Unexpected error during prediction: {e}")
+        st.error(f"Error during prediction: {e}")
         st.write("Debugging Information:")
         st.write(f"Features: {features}")
         st.write(f"Scaled Features: {features_scaled}")
