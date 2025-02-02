@@ -15,15 +15,8 @@ def load_resources():
 # Preprocess input features
 def preprocess_input(features, scaler):
     try:
-        st.write("### Debugging Scaler")
-        st.write("Scaler Type:", type(scaler))
-        st.write("Scaler Contents:", scaler)
-
-        # If scaler is a NumPy array, assume it contains scaling factors (standardization)
-        if isinstance(scaler, np.ndarray):
-            scaled_features = (features - scaler.mean(axis=0)) / scaler.std(axis=0)
-        else:
-            scaled_features = scaler.transform([features])
+        # Apply scaling to the input features
+        scaled_features = scaler.transform([features])
         return scaled_features
     except Exception as e:
         st.error(f"Error during scaling: {e}")
@@ -31,45 +24,40 @@ def preprocess_input(features, scaler):
 
 # App UI
 def main():
-    st.title("Random Forest Classifier")
-    st.write("Enter the features to predict the class.")
+    st.title("Plant Disease Prediction")
+    st.write("Enter the details to predict the disease.")
 
     # Load model and scaler
     model, scaler = load_resources()
 
-    # Determine number of features dynamically
-    if isinstance(scaler, np.ndarray):
-        num_features = scaler.shape[0]
-    else:
-        try:
-            num_features = scaler.mean_.shape[0]
-        except AttributeError:
-            st.error("Could not determine the number of features from the scaler.")
-            return
+    # Input fields for plant disease prediction
+    plant_name = st.text_input("Plant Name")
+    disease = st.text_input("Disease")
+    severity = st.number_input("Severity", min_value=0.0, step=0.1, format="%.2f")
+    region = st.text_input("Region")
+    days_since_detection = st.number_input("Days Since Detection", min_value=0, step=1)
+    treatment_status = st.selectbox("Treatment Status", ["Not Started", "In Progress", "Completed"])
 
-    # Generate placeholder feature names
-    feature_names = [f"Feature {i+1}" for i in range(num_features)]
+    # Convert categorical inputs into numeric or encoded form if required
+    treatment_mapping = {"Not Started": 0, "In Progress": 1, "Completed": 2}
+    treatment_status_encoded = treatment_mapping[treatment_status]
 
-    # Collect user input
-    user_input = []
-    for feature in feature_names:
-        value = st.number_input(f"{feature}", min_value=0.0, step=0.1, format="%.2f")
-        user_input.append(value)
+    # Combine inputs into a feature array
+    user_input = [severity, days_since_detection, treatment_status_encoded]
 
-    # Predict button
-    if st.button("Predict"):
+    if st.button("Predict Disease"):
         st.write("### Debug Information")
         st.write("User Input:", user_input)
 
         # Preprocess user input
-        scaled_input = preprocess_input(np.array(user_input), scaler)
+        scaled_input = preprocess_input(user_input, scaler)
         if scaled_input is not None:
             st.write("Scaled Input:", scaled_input)
 
             # Make prediction
             try:
                 prediction = model.predict(scaled_input.reshape(1, -1))[0]
-                st.success(f"Predicted Class: {prediction}")
+                st.success(f"Predicted Disease: {prediction}")
             except Exception as e:
                 st.error(f"Error during prediction: {e}")
 
