@@ -15,6 +15,10 @@ def load_resources():
 # Preprocess input features
 def preprocess_input(features, scaler):
     try:
+        st.write("### Debugging Scaler")
+        st.write("Scaler Type:", type(scaler))
+        st.write("Scaler Contents:", scaler)
+
         # If scaler is a NumPy array, assume it contains scaling factors (standardization)
         if isinstance(scaler, np.ndarray):
             scaled_features = (features - scaler.mean(axis=0)) / scaler.std(axis=0)
@@ -37,7 +41,11 @@ def main():
     if isinstance(scaler, np.ndarray):
         num_features = scaler.shape[0]
     else:
-        num_features = scaler.mean_.shape[0]
+        try:
+            num_features = scaler.mean_.shape[0]
+        except AttributeError:
+            st.error("Could not determine the number of features from the scaler.")
+            return
 
     # Generate placeholder feature names
     feature_names = [f"Feature {i+1}" for i in range(num_features)]
