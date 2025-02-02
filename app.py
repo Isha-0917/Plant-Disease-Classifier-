@@ -59,10 +59,7 @@ if st.button("Predict"):
         # Display the prediction
         st.success(f"Predicted Disease: {predicted_disease}")
     except Exception as e:
-        st.error(f"Error during prediction: {e}")
-        st.write("Debugging Information:")
-        st.write(f"Features: {features}")
-        st.write(f"Scaled Features: {features_scaled}")
+        st.error("An error occurred during prediction. Please try again.")
 # Reset Button
 if st.button("Reset"):
     st.rerun()
