@@ -49,6 +49,13 @@ if st.button("Predict"):
             ]
         ).reshape(1, -1)
 
+        # Debug: Validate feature array dimensions
+        if features.shape[1] != scaler.mean_.shape[0]:
+            st.error(
+                f"Feature mismatch: Scaler expects {scaler.mean_.shape[0]} features, but received {features.shape[1]}."
+            )
+            st.stop()
+
         # Scale features
         features_scaled = scaler.transform(features)
 
@@ -59,7 +66,7 @@ if st.button("Predict"):
         # Display the prediction
         st.success(f"Predicted Disease: {predicted_disease}")
     except Exception as e:
-        st.error("An error occurred during prediction. Please try again.")
+        st.error(f"An error occurred during prediction: {e}")
 # Reset Button
 if st.button("Reset"):
     st.rerun()
