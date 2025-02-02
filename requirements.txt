@@ -1,8 +1,8 @@
+streamlit
 pandas
 numpy
 matplotlib
-seaborn
-streamlit
-pickle
 scikit-learn
+seaborn
+imblearn
 joblib
