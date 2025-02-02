@@ -18,6 +18,7 @@ st.write("Enter the plant details to predict the disease.")
 
 # Input features
 plant_name = st.selectbox("Plant Name", label_encoders["Plant Name"].classes_)
+disease = st.selectbox("Known Disease", label_encoders["Disease"].classes_)
 severity = st.selectbox("Severity", label_encoders["Severity"].classes_)
 region = st.selectbox("Region", label_encoders["Region"].classes_)
 treatment_status = st.selectbox(
@@ -32,6 +33,7 @@ if st.button("Predict"):
     try:
         # Encode categorical features
         plant_name_encoded = label_encoders["Plant Name"].transform([plant_name])[0]
+        disease_encoded = label_encoders["Disease"].transform([disease])[0]
         severity_encoded = label_encoders["Severity"].transform([severity])[0]
         region_encoded = label_encoders["Region"].transform([region])[0]
         treatment_status_encoded = label_encoders["Treatment Status"].transform(
@@ -42,6 +44,7 @@ if st.button("Predict"):
         features = np.array(
             [
                 plant_name_encoded,
+                disease_encoded,
                 severity_encoded,
                 region_encoded,
                 treatment_status_encoded,
